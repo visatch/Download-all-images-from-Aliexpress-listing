@@ -14,7 +14,8 @@ def temu_download_all_thumbnails_pictures(url: str, directoryName:str) -> List[s
     USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 
     chrome_options.add_argument(f"user-agent={USER_AGENT}")  
-    # chrome_options.add_argument("--headless")
+    chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+    chrome_options.add_argument("--headless")
     #visashopping1711@gmail.com
 
     service = Service(executable_path='C:/Users/Visa/Dropbox/Document In The US/Etsy/python_code/chromedriver.exe')  # point this to your ChromeDriver location
@@ -36,6 +37,7 @@ def temu_download_all_thumbnails_pictures(url: str, directoryName:str) -> List[s
                 break
 
         list_of_url.append(each_url)
+        print(each_url)
 
     driver.quit()
 
@@ -45,11 +47,11 @@ def temu_download_all_thumbnails_pictures(url: str, directoryName:str) -> List[s
     # Check if directory exist or not -> if exist -> Empty it otherwise create it
     createDirectoryOrEmptyIt(img_dir)
 
-    for i, url in enumerate(list_of_url):
-        response = requests.get(url, stream=True)
-        with open(os.path.join(img_dir, f'image_{i}.jpg'), 'wb') as out_file:
-            out_file.write(response.content)
-        print(f"Downloaded image_{i}.jpg")
+    # for i, url in enumerate(list_of_url):
+    #     response = requests.get(url, stream=True)
+    #     with open(os.path.join(img_dir, f'image_{i}.jpg'), 'wb') as out_file:
+    #         out_file.write(response.content)
+    #     print(f"Downloaded image_{i}.jpg")
 
 
 
