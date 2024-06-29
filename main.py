@@ -1,108 +1,55 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By 
-import argparse
-import requests
-import os
+import pyautogui
+# import threading
 import time
-import shutil
+import datetime
+import math
 
-def download_all_images_by_excecuting_the_script(url, directoryName):
-    #set chrome options
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
+screenSize = pyautogui.size()
 
-    #Selenium v4+ must be used Service
-    service = Service(executable_path='C:/Users/Visa/Dropbox/Document In The US/Etsy/python_code/chromedriver.exe')  # point this to your ChromeDriver location
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+def moveMouse(x: int):
+    pyautogui.moveTo(x, screenSize[1], duration = 1)
 
-    driver.get(url)
+def clickMouse():
+    pyautogui.click()
 
-    #Wait for content to load 
-    time.sleep(10)
+def moveInCircle():
+    # Radius 
+    R = 400
+    # measuring screen size
+    (x,y) = pyautogui.size()
+    # locating center of the screen 
+    (X,Y) = pyautogui.position(x/4,y/4)
+    # offsetting by radius 
+    pyautogui.moveTo(X+R,Y)
 
-    # execute the script to get the image paths 
-    urls = driver.execute_script("return window.runParams.data.imageModule.imagePathList")
+    for i in range(360):
+        # setting pace with a modulus 
+        if i%6==0:
+            pyautogui.moveTo(X+R*math.cos(math.radians(i)),Y+R*math.sin(math.radians(i)))
 
-    # define the directory for storing images
-    img_dir = os.path.join(os.getcwd(),directoryName)  
 
-    # Check if directory exist or not -> if exist -> Empty it otherwise create it
-    createDirectoryOrEmptyIt(img_dir)
+def main():
+    while (True):
+        moveInCircle()
+        time.sleep(60*60)
 
-    for i, url in enumerate(urls):
-        response = requests.get(url, stream=True)
-        with open(os.path.join(img_dir, f'image_{i}.jpg'), 'wb') as out_file:
-            out_file.write(response.content)
-        print(f"Downloaded image_{i}.jpg")
 
-    driver.quit()  
+    # while(True):
+    #     time.sleep(10)
+    #     moveMouse(1)
+    #     time.sleep(10)
+    #     moveMouse(-1)
+    # hour = datetime.datetime.now().hour
+    # min = datetime.datetime.now().minute
+    
+    
+    # if min < min + 1:
+    #     print("1 min pass")
+    # threading.Timer(5.0, moveMouse).start()
+    # threading.Timer(10.0, clickMouse).start()
+    # else:
 
-def download_all_images_by_scrapping(url, directoryName):
-    def trim_url(url):
-        index = url.find(".jpg")
-        if index != -1:
-            return url[:index+4]
-        
-    #set chrome options
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")       
 
-    # setup the webdriver
-    service = Service(executable_path='C:/Users/Visa/Dropbox/Document In The US/Etsy/python_code/chromedriver.exe')  # point this to your ChromeDriver location
-    driver = webdriver.Chrome(service=service,options=chrome_options)
-    driver.implicitly_wait(5)
-
-    driver.get(url)
-
-    time.sleep(5)
-
-    content = driver.find_element(By.CLASS_NAME,'sku-property-list')
-    imgs = content.find_elements(By.TAG_NAME, "li")
-
-    imgs_url = []
-    for i in imgs:
-        img_url = trim_url(i.find_element(By.TAG_NAME,'div').find_element(By.TAG_NAME,'img').get_attribute('src'))
-        imgs_url.append(img_url)
-
-    # define the directory for storing images
-    img_dir = os.path.join(os.getcwd(),directoryName)  
-
-    # Check if directory exist or not -> if exist -> Empty it otherwise create it
-    createDirectoryOrEmptyIt(img_dir)
-
-    for i, url in enumerate(imgs_url):
-        response = requests.get(url, stream=True)
-        with open(os.path.join(img_dir, f'image_{i}.jpg'), 'wb') as out_file:
-            out_file.write(response.content)
-        print(f"Downloaded image_{i}.jpg")
-
-    driver.quit()
-
-def createDirectoryOrEmptyIt(directory):
-    path_to_directory = os.path.join(os.getcwd(),directory)
-    if not os.path.exists(path_to_directory):
-        os.makedirs(path_to_directory)
-    else:
-        for filename in os.listdir(path_to_directory):
-            file_path = os.path.join(path_to_directory,filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                    print('Failed to delete %s. Reason: %s' % (file_path,e))
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Download all images from Aliexpress")
-    parser.add_argument("--url",type=str, help="URL of the product")
-    parser.add_argument("--directory",type=str, help="The directory that image will be stored")
-
-    args = parser.parse_args()
-    
-    if not args.url or not args.directory:
-        parser.error("url and directory cannot be empty")
-
-    download_all_images_by_scrapping(args.url,args.directory)
+    main()
